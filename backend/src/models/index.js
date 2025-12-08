@@ -26,6 +26,9 @@ Deal.belongsTo(Contact, { foreignKey: 'contact_id' });
 User.hasMany(Deal, { foreignKey: 'owner_id', onDelete: 'SET NULL' });
 Deal.belongsTo(User, { as: 'owner', foreignKey: 'owner_id' });
 
+Pipeline.hasMany(Deal, { foreignKey: 'pipeline_id', onDelete: 'SET NULL' });
+Deal.belongsTo(Pipeline, { foreignKey: 'pipeline_id' });
+
 Organization.hasMany(Activity, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
 Activity.belongsTo(Organization, { foreignKey: 'organization_id' });
 

@@ -1,4 +1,6 @@
 const { Activity, User, Contact, Deal } = require('../models');
+const { sendActivityEmail } = require('../utils/emailService');
+const logger = require('../utils/logger');
 
 const getActivities = async (req, res, next) => {
   try {
@@ -83,6 +85,45 @@ const createActivity = async (req, res, next) => {
 
     const activity = await Activity.create(activityData);
 
+    // If it's an email activity and has email address, send the email
+    if (activity.type === 'email' && activity.custom_fields?.email_address) {
+      try {
+        const user = await User.findByPk(req.user.id);
+        const fromName = `${user.first_name} ${user.last_name}`;
+        
+        await sendActivityEmail({
+          to: activity.custom_fields.email_address,
+          subject: activity.subject || 'Message from CRM',
+          description: activity.description || '',
+          from: fromName
+        });
+
+        // Update activity to mark email as sent
+        await activity.update({
+          custom_fields: {
+            ...activity.custom_fields,
+            email_sent: true,
+            email_sent_at: new Date()
+          }
+        });
+
+        logger.info('Email sent successfully for activity', { activityId: activity.id });
+      } catch (emailError) {
+        logger.error('Failed to send email for activity', { 
+          activityId: activity.id, 
+          error: emailError.message 
+        });
+        // Don't fail the activity creation if email fails
+        await activity.update({
+          custom_fields: {
+            ...activity.custom_fields,
+            email_sent: false,
+            email_error: emailError.message
+          }
+        });
+      }
+    }
+
     res.status(201).json({
       message: 'Activity created successfully',
       activity
@@ -164,11 +205,64 @@ const deleteActivity = async (req, res, next) => {
   }
 };
 
+const sendActivityEmailNow = async (req, res, next) => {
+  try {
+    const activity = await Activity.findOne({
+      where: {
+        id: req.params.id,
+        organization_id: req.tenancy.organization_id
+      },
+      include: [{ model: User, attributes: ['id', 'first_name', 'last_name', 'email'] }]
+    });
+
+    if (!activity) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+
+    if (activity.type !== 'email') {
+      return res.status(400).json({ error: 'Activity is not an email type' });
+    }
+
+    const emailAddress = activity.custom_fields?.email_address;
+    if (!emailAddress) {
+      return res.status(400).json({ error: 'No email address found in activity' });
+    }
+
+    const user = activity.User || await User.findByPk(req.user.id);
+    const fromName = `${user.first_name} ${user.last_name}`;
+
+    await sendActivityEmail({
+      to: emailAddress,
+      subject: activity.subject || 'Message from CRM',
+      description: activity.description || '',
+      from: fromName
+    });
+
+    // Update activity to mark email as sent
+    await activity.update({
+      custom_fields: {
+        ...activity.custom_fields,
+        email_sent: true,
+        email_sent_at: new Date()
+      }
+    });
+
+    res.json({
+      message: 'Email sent successfully',
+      activity
+    });
+  } catch (error) {
+    logger.error('Failed to send email', { error: error.message });
+    next(error);
+  }
+};
+
 module.exports = {
   getActivities,
   getActivity,
   createActivity,
   updateActivity,
   completeActivity,
-  deleteActivity
+  deleteActivity,
+  sendActivityEmailNow
 };

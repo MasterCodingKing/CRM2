@@ -29,6 +29,13 @@ const Deal = sequelize.define('Deal', {
       key: 'id'
     }
   },
+  pipeline_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: 'pipelines',
+      key: 'id'
+    }
+  },
   title: {
     type: DataTypes.STRING(255),
     allowNull: false

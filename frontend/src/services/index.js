@@ -120,6 +120,11 @@ export const activitiesService = {
     return response.data;
   },
 
+  sendEmail: async (id) => {
+    const response = await api.post(`/activities/${id}/send-email`);
+    return response.data;
+  },
+
   delete: async (id) => {
     const response = await api.delete(`/activities/${id}`);
     return response.data;

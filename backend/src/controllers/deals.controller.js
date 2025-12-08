@@ -1,9 +1,9 @@
-const { Deal, Contact, User } = require('../models');
+const { Deal, Contact, User, Pipeline } = require('../models');
 const { Op } = require('sequelize');
 
 const getDeals = async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, status, stage, owner_id } = req.query;
+    const { page = 1, limit = 20, status, stage, owner_id, pipeline_id } = req.query;
     const offset = (page - 1) * limit;
 
     const where = { organization_id: req.tenancy.organization_id };
@@ -20,11 +20,16 @@ const getDeals = async (req, res, next) => {
       where.owner_id = owner_id;
     }
 
+    if (pipeline_id) {
+      where.pipeline_id = pipeline_id;
+    }
+
     const { count, rows } = await Deal.findAndCountAll({
       where,
       include: [
         { model: Contact, attributes: ['id', 'first_name', 'last_name', 'email', 'company'] },
-        { model: User, as: 'owner', attributes: ['id', 'first_name', 'last_name', 'email'] }
+        { model: User, as: 'owner', attributes: ['id', 'first_name', 'last_name', 'email'] },
+        { model: Pipeline, attributes: ['id', 'name', 'is_default'] }
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -54,7 +59,8 @@ const getDeal = async (req, res, next) => {
       },
       include: [
         { model: Contact, attributes: ['id', 'first_name', 'last_name', 'email', 'company'] },
-        { model: User, as: 'owner', attributes: ['id', 'first_name', 'last_name', 'email'] }
+        { model: User, as: 'owner', attributes: ['id', 'first_name', 'last_name', 'email'] },
+        { model: Pipeline, attributes: ['id', 'name', 'is_default'] }
       ]
     });
 

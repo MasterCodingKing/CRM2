@@ -7,6 +7,7 @@ router.get('/:id', activitiesController.getActivity);
 router.post('/', activitiesController.createActivity);
 router.put('/:id', activitiesController.updateActivity);
 router.put('/:id/complete', activitiesController.completeActivity);
+router.post('/:id/send-email', activitiesController.sendActivityEmailNow);
 router.delete('/:id', activitiesController.deleteActivity);
 
 module.exports = router;

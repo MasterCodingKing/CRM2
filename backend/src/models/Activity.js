@@ -55,6 +55,9 @@ const Activity = sequelize.define('Activity', {
   is_completed: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  custom_fields: {
+    type: DataTypes.JSON
   }
 }, {
   tableName: 'activities',

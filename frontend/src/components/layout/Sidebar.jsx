@@ -4,6 +4,7 @@ import {
   Users, 
   Briefcase, 
   CheckSquare, 
+  Mail,
   Settings 
 } from 'lucide-react';
 
@@ -14,7 +15,8 @@ export const Sidebar = () => {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Contacts', href: '/contacts', icon: Users },
     { name: 'Deals', href: '/deals', icon: Briefcase },
-    { name: 'Activities', href: '/activities', icon: CheckSquare },
+    // { name: 'Activities', href: '/activities', icon: CheckSquare },
+    { name: 'Compose Email', href: '/compose-email', icon: Mail },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
