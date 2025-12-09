@@ -253,9 +253,19 @@ const replyToEmail = async (req, res) => {
       });
     }
 
+    // Determine reply recipient - if it's a received email, reply to from_email, otherwise to_email
+    const replyTo = originalEmail.type === 'received' ? originalEmail.from_email : originalEmail.to_email;
+    
+    if (!replyTo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot determine reply recipient',
+      });
+    }
+
     // Send reply
     const result = await sendComposedEmail({
-      to: originalEmail.to_email,
+      to: replyTo,
       subject: `Re: ${originalEmail.subject}`,
       message,
     });
@@ -264,7 +274,7 @@ const replyToEmail = async (req, res) => {
     const reply = await Email.create({
       organization_id: req.user.organization_id,
       user_id: req.user.id,
-      to_email: originalEmail.to_email,
+      to_email: replyTo,
       subject: `Re: ${originalEmail.subject}`,
       message,
       type: 'reply',
