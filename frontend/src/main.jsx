@@ -12,7 +12,7 @@ import { Contacts } from './pages/Contacts';
 import { Deals } from './pages/Deals';
 import { Activities } from './pages/Activities';
 import { Settings } from './pages/Settings';
-import { ComposeEmail } from './pages/ComposeEmail';
+import { Emails } from './pages/Emails';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -58,7 +58,7 @@ const App = () => {
             <Route path="contacts" element={<Contacts />} />
             <Route path="deals" element={<Deals />} />
             <Route path="activities" element={<Activities />} />
-            <Route path="compose-email" element={<ComposeEmail />} />
+            <Route path="emails" element={<Emails />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

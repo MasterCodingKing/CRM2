@@ -27,10 +27,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
+    // Handle both 401 (unauthorized) and 403 (expired token)
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      const errorMessage = error.response?.data?.error;
+      // Check if it's a token-related error
+      if (errorMessage?.includes('token') || errorMessage?.includes('expired') || errorMessage?.includes('Invalid')) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

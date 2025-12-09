@@ -6,6 +6,7 @@ const Deal = require('./Deal');
 const Activity = require('./Activity');
 const Pipeline = require('./Pipeline');
 const CustomField = require('./CustomField');
+const Email = require('./Email');
 
 // Define associations
 Organization.hasMany(User, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
@@ -45,7 +46,15 @@ Organization.hasMany(Pipeline, { foreignKey: 'organization_id', onDelete: 'CASCA
 Pipeline.belongsTo(Organization, { foreignKey: 'organization_id' });
 
 Organization.hasMany(CustomField, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
+Organization.hasMany(CustomField, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
 CustomField.belongsTo(Organization, { foreignKey: 'organization_id' });
+
+// Email associations
+Organization.hasMany(Email, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
+Email.belongsTo(Organization, { foreignKey: 'organization_id' });
+
+User.hasMany(Email, { foreignKey: 'user_id', onDelete: 'SET NULL' });
+Email.belongsTo(User, { foreignKey: 'user_id' });
 
 module.exports = {
   sequelize,
@@ -55,5 +64,6 @@ module.exports = {
   Deal,
   Activity,
   Pipeline,
-  CustomField
+  CustomField,
+  Email
 };
