@@ -13,6 +13,7 @@ import { Deals } from './pages/Deals';
 import { Activities } from './pages/Activities';
 import { Settings } from './pages/Settings';
 import { Emails } from './pages/Emails';
+import Users from './pages/Users';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -59,6 +60,7 @@ const App = () => {
             <Route path="deals" element={<Deals />} />
             <Route path="activities" element={<Activities />} />
             <Route path="emails" element={<Emails />} />
+            <Route path="users" element={<Users />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

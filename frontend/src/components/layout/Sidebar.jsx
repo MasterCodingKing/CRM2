@@ -5,11 +5,14 @@ import {
   Briefcase, 
   CheckSquare, 
   Mail,
-  Settings 
+  Settings,
+  Shield
 } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 export const Sidebar = () => {
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -17,9 +20,15 @@ export const Sidebar = () => {
     { name: 'Deals', href: '/deals', icon: Briefcase },
     { name: 'Activities', href: '/activities', icon: CheckSquare },
     { name: 'Emails', href: '/emails', icon: Mail },
-    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
+  // Add Users link for admin and super_admin
+  if (user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'manager') {
+    navigation.push({ name: 'Users', href: '/users', icon: Shield });
+  }
+
+  navigation.push({ name: 'Settings', href: '/settings', icon: Settings });
+//Task & Activity Management - Assign Task, Set Reminders, Meetings Sales and service
   return (
     <div className="w-64 bg-white h-screen shadow-sm border-r border-gray-200">
       <div className="p-6">

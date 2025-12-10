@@ -12,6 +12,10 @@ const Email = require('./Email');
 Organization.hasMany(User, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
 User.belongsTo(Organization, { foreignKey: 'organization_id' });
 
+// User created by another user (for user management tracking)
+User.hasMany(User, { foreignKey: 'created_by', as: 'CreatedUsers', onDelete: 'SET NULL' });
+User.belongsTo(User, { foreignKey: 'created_by', as: 'CreatedBy' });
+
 Organization.hasMany(Contact, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
 Contact.belongsTo(Organization, { foreignKey: 'organization_id' });
 
@@ -35,6 +39,16 @@ Activity.belongsTo(Organization, { foreignKey: 'organization_id' });
 
 User.hasMany(Activity, { foreignKey: 'user_id', onDelete: 'SET NULL' });
 Activity.belongsTo(User, { foreignKey: 'user_id' });
+
+// NOTE: These associations require database migration to be run first
+// Uncomment after running migrations/RECREATE_ACTIVITIES_TABLE.sql
+// Assigned user association for activities
+// User.hasMany(Activity, { foreignKey: 'assigned_to', as: 'AssignedActivities', onDelete: 'SET NULL' });
+// Activity.belongsTo(User, { foreignKey: 'assigned_to', as: 'AssignedUser' });
+
+// Escalated to user association for support tickets
+// User.hasMany(Activity, { foreignKey: 'escalated_to', as: 'EscalatedActivities', onDelete: 'SET NULL' });
+// Activity.belongsTo(User, { foreignKey: 'escalated_to', as: 'EscalatedToUser' });
 
 Contact.hasMany(Activity, { foreignKey: 'contact_id', onDelete: 'CASCADE' });
 Activity.belongsTo(Contact, { foreignKey: 'contact_id' });

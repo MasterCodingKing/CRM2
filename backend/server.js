@@ -15,9 +15,20 @@ const startServer = async () => {
 
     // Sync models - only sync new tables, don't alter existing ones
     if (process.env.NODE_ENV === 'development') {
-      // Use sync without alter to avoid "too many keys" error
-      await sequelize.sync();
-      logger.info('Database models synchronized');
+      // IMPORTANT: First time after adding new columns, you may need to:
+      // 1. Drop the activities table manually: DROP TABLE activities;
+      // 2. Or run: await sequelize.sync({ force: true }); (WARNING: deletes all data)
+      // 3. Then change back to: await sequelize.sync({ alter: true });
+      
+      // For now, skip sync if it fails - you'll need to manually update the DB
+      try {
+        await sequelize.sync({ alter: true });
+        logger.info('Database models synchronized');
+      } catch (syncError) {
+        logger.warn('Database sync failed. Please manually update the database schema.');
+        logger.warn('See migrations folder for SQL scripts.');
+        logger.warn(syncError.message);
+      }
     }
 
     // Start server

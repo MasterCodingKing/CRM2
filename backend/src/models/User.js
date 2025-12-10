@@ -35,8 +35,12 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(100)
   },
   role: {
-    type: DataTypes.ENUM('admin', 'manager', 'user'),
-    defaultValue: 'user'
+    type: DataTypes.ENUM('super_admin', 'admin', 'manager', 'sales_agent', 'support', 'read_only'),
+    defaultValue: 'sales_agent'
+  },
+  permissions: {
+    type: DataTypes.JSON,
+    defaultValue: {}
   },
   avatar_url: {
     type: DataTypes.STRING(500)
@@ -47,6 +51,13 @@ const User = sequelize.define('User', {
   },
   last_login_at: {
     type: DataTypes.DATE
+  },
+  created_by: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   }
 }, {
   tableName: 'users',

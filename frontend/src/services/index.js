@@ -105,6 +105,26 @@ export const activitiesService = {
     return response.data;
   },
 
+  getById: async (id) => {
+    const response = await api.get(`/activities/${id}`);
+    return response.data;
+  },
+
+  getStats: async () => {
+    const response = await api.get('/activities/stats');
+    return response.data;
+  },
+
+  getOverdue: async () => {
+    const response = await api.get('/activities/overdue');
+    return response.data;
+  },
+
+  getTeamMembers: async () => {
+    const response = await api.get('/activities/team-members');
+    return response.data;
+  },
+
   create: async (data) => {
     const response = await api.post('/activities', data);
     return response.data;
@@ -127,6 +147,41 @@ export const activitiesService = {
 
   delete: async (id) => {
     const response = await api.delete(`/activities/${id}`);
+    return response.data;
+  },
+
+  // Checklist management
+  updateChecklist: async (id, data) => {
+    const response = await api.put(`/activities/${id}/checklist`, data);
+    return response.data;
+  },
+
+  // Call logging
+  logCall: async (data) => {
+    const response = await api.post('/activities/log-call', data);
+    return response.data;
+  },
+
+  // Meeting attendee status
+  updateAttendeeStatus: async (id, data) => {
+    const response = await api.put(`/activities/${id}/attendee-status`, data);
+    return response.data;
+  },
+
+  // Support ticket actions
+  escalateTicket: async (id, data) => {
+    const response = await api.put(`/activities/${id}/escalate`, data);
+    return response.data;
+  },
+
+  rateTicket: async (id, data) => {
+    const response = await api.put(`/activities/${id}/rate`, data);
+    return response.data;
+  },
+
+  // Reminder actions
+  snoozeReminder: async (id, minutes) => {
+    const response = await api.put(`/activities/${id}/snooze`, { snooze_minutes: minutes });
     return response.data;
   }
 };
