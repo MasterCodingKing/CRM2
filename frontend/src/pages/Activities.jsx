@@ -4,12 +4,13 @@ import { activitiesService, contactsService } from '../services';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Input } from '../components/common/Input';
+import { Calendar as CalendarView } from '../components/common/Calendar';
 import { 
   Plus, CheckCircle, Circle, Phone, Mail, Check, Calendar, 
   ListTodo, Headphones, Clock, AlertTriangle, Users, 
   Video, MapPin, FileText, Star, ChevronDown, ChevronRight,
   Play, Pause, RotateCcw, Bell, ArrowUpRight, Timer, Target,
-  Trash2, Edit
+  Trash2, Edit, List, CalendarDays
 } from 'lucide-react';
 
 // Activity type configurations
@@ -61,6 +62,7 @@ const TYPE_COLORS = {
 export const Activities = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [expandedActivities, setExpandedActivities] = useState({});
@@ -457,8 +459,8 @@ export const Activities = () => {
         </nav>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-4 items-center">
+      {/* Filters and View Toggle */}
+      <div className="flex gap-4 items-center justify-between">
         <select
           className="input w-40"
           value={filterStatus}
@@ -469,11 +471,58 @@ export const Activities = () => {
           <option value="completed">Completed</option>
           <option value="overdue">Overdue</option>
         </select>
+
+        {/* View Mode Toggle */}
+        <div className="flex rounded-md border">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-4 py-2 text-sm flex items-center gap-2 ${
+              viewMode === 'list' 
+                ? 'bg-primary-50 text-primary-700' 
+                : 'hover:bg-gray-50 text-gray-600'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            List
+          </button>
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`px-4 py-2 text-sm border-l flex items-center gap-2 ${
+              viewMode === 'calendar' 
+                ? 'bg-primary-50 text-primary-700' 
+                : 'hover:bg-gray-50 text-gray-600'
+            }`}
+          >
+            <CalendarDays className="w-4 h-4" />
+            Calendar
+          </button>
+        </div>
       </div>
 
+      {/* Calendar View */}
+      {viewMode === 'calendar' && (
+        <CalendarView
+          activities={activitiesData?.activities || []}
+          onDateClick={(date) => {
+            // Create new activity for clicked date
+            const dateTime = date.toISOString().slice(0, 16);
+            setFormData({
+              ...formData,
+              scheduled_at: dateTime,
+              due_date: dateTime,
+            });
+            setIsModalOpen(true);
+          }}
+          onActivityClick={(activity) => {
+            openEditModal(activity);
+          }}
+          onCreateActivity={() => setIsModalOpen(true)}
+        />
+      )}
+
       {/* Activities List */}
-      <div className="card">
-        {isLoading ? (
+      {viewMode === 'list' && (
+      <div className="card">{isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
@@ -799,6 +848,7 @@ export const Activities = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Create/Edit Modal */}
       <Modal 

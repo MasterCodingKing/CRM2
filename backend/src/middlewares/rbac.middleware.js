@@ -16,7 +16,8 @@ const ROLES = {
       'activities.create', 'activities.read', 'activities.update', 'activities.delete',
       'reports.read', 'reports.export',
       'settings.read', 'settings.update',
-      'organization.update'
+      'organization.update',
+      'social_media.read', 'social_media.create', 'social_media.update', 'social_media.delete', 'social_media.connect'
     ],
     description: 'Administrator - Full access to all data and settings'
   },
@@ -28,7 +29,8 @@ const ROLES = {
       'deals.create', 'deals.read', 'deals.update', 'deals.assign',
       'activities.create', 'activities.read', 'activities.update',
       'reports.read', 'reports.export',
-      'team.view_performance'
+      'team.view_performance',
+      'social_media.read', 'social_media.create', 'social_media.update'
     ],
     description: 'Manager - View all data, assign leads, view reports'
   },
@@ -41,6 +43,16 @@ const ROLES = {
       'reports.read.own'
     ],
     description: 'Sales Agent - Manage own clients and deals'
+  },
+  marketing: {
+    level: 45,
+    permissions: [
+      'contacts.read',
+      'social_media.read', 'social_media.create', 'social_media.update', 'social_media.connect',
+      'activities.read',
+      'reports.read'
+    ],
+    description: 'Marketing - Manage social media and view contacts'
   },
   support: {
     level: 40,

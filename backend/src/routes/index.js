@@ -11,6 +11,8 @@ const pipelinesRoutes = require('./pipelines.routes');
 const dashboardRoutes = require('./dashboard.routes');
 const emailRoutes = require('./email.routes');
 const usersRoutes = require('./users.routes');
+const socialIntegrationRoutes = require('./socialIntegration.routes');
+const facebookRoutes = require('./facebook.routes');
 
 // Public routes
 router.use('/auth', authRoutes);
@@ -23,5 +25,11 @@ router.use('/pipelines', authenticateToken, ensureTenancy, pipelinesRoutes);
 router.use('/dashboard', authenticateToken, ensureTenancy, dashboardRoutes);
 router.use('/email', authenticateToken, ensureTenancy, emailRoutes);
 router.use('/users', authenticateToken, ensureTenancy, usersRoutes);
+
+// Social media routes (includes webhooks which need to be public)
+router.use('/social-media', socialIntegrationRoutes);
+
+// Facebook-specific routes (protected)
+router.use('/facebook', authenticateToken, ensureTenancy, facebookRoutes);
 
 module.exports = router;

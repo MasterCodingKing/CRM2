@@ -5,6 +5,9 @@ const emailController = require('../controllers/email.controller');
 // GET /api/email - Get all emails
 router.get('/', emailController.getEmails);
 
+// GET /api/email/by-contact - Get emails grouped by contact
+router.get('/by-contact', emailController.getEmailsByContact);
+
 // GET /api/email/:id - Get single email with replies
 router.get('/:id', emailController.getEmailById);
 

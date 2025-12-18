@@ -51,7 +51,7 @@ export const Contacts = () => {
   const deleteMutation = useMutation({
     mutationFn: contactsService.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries(['contacts']);
+      queryClient.invalidateQueries(['contacts']);     
       setIsDeleteModalOpen(false);
       setSelectedContact(null);
     }

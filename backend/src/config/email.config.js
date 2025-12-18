@@ -23,32 +23,32 @@ const logger = require('../utils/logger');
  * Update the SMTP settings according to your provider's documentation
  */
 
-// Create transporter with your SMTP settings
-const createTransporter = () => {
-  const config = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+  // Create transporter with your SMTP settings
+  const createTransporter = () => {
+    const config = {
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    };
+
+    return nodemailer.createTransport(config);
   };
 
-  return nodemailer.createTransport(config);
-};
+  const transporter = createTransporter();
 
-const transporter = createTransporter();
+  // Verify connection on startup
+  transporter.verify((error, success) => {
+    if (error) {
+      logger.error('SMTP connection error:', error.message);
+      console.error('❌ Email service not configured properly. Check your .env file.');
+    } else {
+      logger.info('SMTP server is ready to send emails');
+      console.log('✅ Email service is ready');
+    }
+  });
 
-// Verify connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    logger.error('SMTP connection error:', error.message);
-    console.error('❌ Email service not configured properly. Check your .env file.');
-  } else {
-    logger.info('SMTP server is ready to send emails');
-    console.log('✅ Email service is ready');
-  }
-});
-
-module.exports = transporter;
+  module.exports = transporter;

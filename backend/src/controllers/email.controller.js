@@ -75,12 +75,12 @@ const sendEmail = async (req, res) => {
 };
 
 /**
- * Get all sent emails
+ * Get all sent emails with enhanced threading support
  * GET /api/email
  */
 const getEmails = async (req, res) => {
   try {
-    const { page = 1, limit = 20, type = 'all' } = req.query;
+    const { page = 1, limit = 100, type = 'all', contact_email } = req.query;
     const offset = (page - 1) * limit;
 
     const where = {
@@ -91,8 +91,17 @@ const getEmails = async (req, res) => {
       parent_id: null, // Only get top-level emails, not replies
     };
 
+    // Filter by type
     if (type && type !== 'all') {
       where.type = type;
+    }
+
+    // Filter by contact email
+    if (contact_email) {
+      where[Op.or] = [
+        { to_email: { [Op.like]: `%${contact_email}%` } },
+        { from_email: { [Op.like]: `%${contact_email}%` } }
+      ];
     }
 
     const { rows: emails, count } = await Email.findAndCountAll({
@@ -141,7 +150,10 @@ const getEmailById = async (req, res) => {
     const email = await Email.findOne({
       where: {
         id,
-        organization_id: req.user.organization_id,
+        [Op.or]: [
+          { organization_id: req.user.organization_id }, // Sent by this org
+          { organization_id: null }, // Received emails
+        ],
       },
       include: [
         {
@@ -190,7 +202,10 @@ const deleteEmail = async (req, res) => {
     const email = await Email.findOne({
       where: {
         id,
-        organization_id: req.user.organization_id,
+        [Op.or]: [
+          { organization_id: req.user.organization_id }, // Sent by this org
+          { organization_id: null }, // Received emails
+        ],
       },
     });
 
@@ -242,7 +257,10 @@ const replyToEmail = async (req, res) => {
     const originalEmail = await Email.findOne({
       where: {
         id,
-        organization_id: req.user.organization_id,
+        [Op.or]: [
+          { organization_id: req.user.organization_id }, // Sent by this org
+          { organization_id: null }, // Received emails
+        ],
       },
     });
 
@@ -263,11 +281,15 @@ const replyToEmail = async (req, res) => {
       });
     }
 
-    // Send reply
+    // Send reply with proper threading
     const result = await sendComposedEmail({
       to: replyTo,
       subject: `Re: ${originalEmail.subject}`,
       message,
+      original: {
+        messageId: originalEmail.message_id,
+        references: originalEmail.references,
+      },
     });
 
     // Save reply to database
@@ -324,7 +346,10 @@ const replyToAll = async (req, res) => {
     const originalEmail = await Email.findOne({
       where: {
         id,
-        organization_id: req.user.organization_id,
+        [Op.or]: [
+          { organization_id: req.user.organization_id }, // Sent by this org
+          { organization_id: null }, // Received emails
+        ],
       },
     });
 
@@ -335,11 +360,15 @@ const replyToAll = async (req, res) => {
       });
     }
 
-    // Send reply to all
+    // Send reply to all with proper threading
     const result = await sendComposedEmail({
       to: originalEmail.to_email,
       subject: `Re: ${originalEmail.subject}`,
       message,
+      original: {
+        messageId: originalEmail.message_id,
+        references: originalEmail.references,
+      },
     });
 
     // Save reply to database
@@ -376,9 +405,84 @@ const replyToAll = async (req, res) => {
   }
 };
 
+/**
+ * Get emails grouped by contact for conversation view
+ * GET /api/email/by-contact
+ */
+const getEmailsByContact = async (req, res) => {
+  try {
+    const emails = await Email.findAll({
+      where: {
+        [Op.or]: [
+          { organization_id: req.user.organization_id },
+          { organization_id: null }
+        ],
+        parent_id: null,
+      },
+      include: [
+        {
+          model: Email,
+          as: 'replies',
+          separate: true,
+          order: [['created_at', 'ASC']],
+        },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    // Group emails by contact email
+    const grouped = {};
+    emails.forEach(email => {
+      const contactEmail = email.type === 'received' ? email.from_email : email.to_email;
+      if (!contactEmail) return;
+
+      const key = contactEmail.toLowerCase().trim();
+      if (!grouped[key]) {
+        grouped[key] = {
+          contact_email: contactEmail,
+          emails: [],
+          unread_count: 0,
+          last_email_date: null,
+        };
+      }
+
+      grouped[key].emails.push(email);
+      if (!email.read_at) grouped[key].unread_count++;
+      
+      const emailDate = new Date(email.created_at);
+      if (!grouped[key].last_email_date || emailDate > grouped[key].last_email_date) {
+        grouped[key].last_email_date = emailDate;
+      }
+    });
+
+    const conversations = Object.values(grouped).map(conv => ({
+      ...conv,
+      email_count: conv.emails.length,
+      last_email: conv.emails[0], // Already sorted by date DESC
+    }));
+
+    // Sort by last email date
+    conversations.sort((a, b) => b.last_email_date - a.last_email_date);
+
+    res.json({
+      success: true,
+      conversations,
+      total: conversations.length,
+    });
+  } catch (error) {
+    logger.error('Get emails by contact error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch emails by contact',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   sendEmail,
   getEmails,
+  getEmailsByContact,
   getEmailById,
   deleteEmail,
   replyToEmail,

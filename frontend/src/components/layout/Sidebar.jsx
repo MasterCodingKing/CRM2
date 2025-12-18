@@ -6,7 +6,7 @@ import {
   CheckSquare, 
   Mail,
   Settings,
-  Shield
+  Shield,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
@@ -18,6 +18,7 @@ export const Sidebar = () => {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Contacts', href: '/contacts', icon: Users },
     { name: 'Deals', href: '/deals', icon: Briefcase },
+    { name: 'Marketing', href: '/marketing', icon: Mail },
     { name: 'Activities', href: '/activities', icon: CheckSquare },
     { name: 'Emails', href: '/emails', icon: Mail },
   ];
@@ -39,7 +40,6 @@ export const Sidebar = () => {
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname.startsWith(item.href);
-          
           return (
             <Link
               key={item.name}
@@ -49,7 +49,7 @@ export const Sidebar = () => {
                   ? 'bg-primary-50 text-primary-700 font-medium'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
-            >
+              >
               <Icon size={20} />
               <span>{item.name}</span>
             </Link>
